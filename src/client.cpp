@@ -172,7 +172,8 @@ int main() {
       local_id = welcome.p_id;
 
       const char *color = (local_id == 1 ? C_P1 : C_P2);
-      cout << "\x1b[38;5;206m" "\x1b[1m"
+      cout << "\x1b[38;5;206m"
+              "\x1b[1m"
               "/// Socket-based Tic Tac Toe /// " C_RST "\n\x1b[38;5;206m"
               "By Nathan Ambrosino\n\n" C_RST
            << color << "Welcome, you are player " << local_id << C_RST << endl;
