@@ -223,7 +223,8 @@ void handle_client(int sockfd, int player_id) {
       }
 
     } else if (type == MsgType::QUIT_REQUEST) {
-      break;
+      cout << "QUIT REQUEST RECEIVED" << endl;
+      handle_quit(0);
     } else {
       std::string m = "Unexpected message type";
       std::vector<uint8_t> out;
@@ -237,13 +238,6 @@ void handle_client(int sockfd, int player_id) {
    * socket slot
    */
   close(sockfd);
-  {
-    std::lock_guard<std::mutex> lock(game_mutex);
-    if (sockfd == player_socket[0])
-      player_socket[0] = -1;
-    if (sockfd == player_socket[1])
-      player_socket[1] = -1;
-  }
 }
 
 // Main method
