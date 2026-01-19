@@ -243,7 +243,9 @@ int main() {
     } break;
 
     case MsgType::DRAW: {
-      cout << "*** GAME OVER: It's a draw!\n";
+      cout << "\x1b[38;5;51m"
+        "*** GAME OVER: It's a draw! ***"
+        "\x1b[0m\n";
       displayBoard(local_game);
       close(sockfd);
       return 0;
