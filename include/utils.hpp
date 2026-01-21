@@ -12,11 +12,11 @@
 #define C_RST "\x1b[0m"
 
 // Prints fatal errors (in red), then terminates program
-void fatal_error(int errCode, const char *m);
+void fatal_error(int errCode, const char* m);
 
 // Display the entire 3x3 grid
-void displayBoard(Game &g);
+void displayBoard(Game& g);
 // Display the entire 3x3 grid
-void displayBoard(const Game &g);
+void displayBoard(const Game& g);
 
 #endif

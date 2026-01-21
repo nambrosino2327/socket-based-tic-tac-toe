@@ -1,4 +1,6 @@
 # Socket-Based Tic-Tac-Toe
+## By Nathan Ambrosino
+*Made in Windows Subsystem for Linux version 2*
 
 A lightweight, terminal-based Tic-Tac-Toe game implemented in modern C++.  
 It features a **multithreaded server**, a **compact binary protocol**, and **two responsive clients** communicating over TCP.

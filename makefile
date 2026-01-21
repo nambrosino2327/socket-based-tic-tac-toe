@@ -7,15 +7,12 @@ CORE_OBJS = \
 	obj/game.o \
 	obj/utils.o
 
-.PHONY: all test clean
+.PHONY: all clean
 
 # Main build
 all: bin/server bin/client test
 
-bin/server: obj/server.o $(CORE_OBJS) | bin
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-bin/client: obj/client.o $(CORE_OBJS) | bin
+bin/%: obj/%.o $(CORE_OBJS) | bin
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 obj/%.o: src/%.cpp | obj
@@ -23,12 +20,6 @@ obj/%.o: src/%.cpp | obj
 
 obj bin:
 	mkdir -p $@
-
-# Tests
-test: bin/test_protocol
-
-bin/test_protocol: obj/test_protocol.o $(CORE_OBJS) | bin
-	$(CXX) $(CXXFLAGS) $^ -o $@
 	
 # Clean
 clean:
