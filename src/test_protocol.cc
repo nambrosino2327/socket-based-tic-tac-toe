@@ -1,4 +1,4 @@
-#include "protocol.hpp"
+#include "protocol.hh"
 #include <cassert>
 #include <cstring>
 #include <iostream>

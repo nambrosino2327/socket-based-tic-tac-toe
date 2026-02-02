@@ -1,6 +1,5 @@
-#pragma once
-#ifndef PROTOCOL_HPP
-#define PROTOCOL_HPP
+#ifndef PROTOCOL_HH
+#define PROTOCOL_HH
 
 #include <cstdint>
 #include <vector>

@@ -1,4 +1,4 @@
-#include "game.hpp"
+#include "game.hh"
 
 // All possible combinations
 static const int WIN_COMBOS[8][3] = {

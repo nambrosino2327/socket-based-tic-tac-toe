@@ -1,5 +1,5 @@
-#include "utils.hpp"
-#include "game.hpp"
+#include "utils.hh"
+#include "game.hh"
 #include <iostream>
 
 void fatal_error(int errCode, const char* m) {

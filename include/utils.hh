@@ -1,8 +1,7 @@
-#pragma once
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#ifndef UTILS_HH
+#define UTILS_HH
 
-#include "game.hpp"
+#include "game.hh"
 
 // Player 1 color (X)
 #define C_P1 "\x1b[38;5;27m"

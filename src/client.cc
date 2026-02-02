@@ -1,6 +1,6 @@
-#include "game.hpp"
-#include "protocol.hpp"
-#include "utils.hpp"
+#include "game.hh"
+#include "protocol.hh"
+#include "utils.hh"
 
 #include <algorithm>
 #include <arpa/inet.h>

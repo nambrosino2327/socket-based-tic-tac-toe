@@ -1,6 +1,5 @@
-#pragma once
-#ifndef GAME_HPP
-#define GAME_HPP
+#ifndef GAME_HH
+#define GAME_HH
 
 #include <array>
 
