@@ -10,7 +10,7 @@ CORE_OBJS = \
 .PHONY: all clean
 
 # Main build
-all: bin/server bin/client test
+all: bin/server bin/client
 
 bin/%: obj/%.o $(CORE_OBJS) | bin
 	$(CXX) $(CXXFLAGS) $^ -o $@
