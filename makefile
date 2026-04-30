@@ -13,14 +13,17 @@ CORE_OBJS = \
 all: bin/server bin/client
 
 bin/%: obj/%.o $(CORE_OBJS) | bin
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	@echo "[CXX] $^ --> $@"
+	@$(CXX) $(CXXFLAGS) $^ -o $@
 
 obj/%.o: src/%.cc | obj
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@echo "[CXX] $^ --> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 obj bin:
 	mkdir -p $@
 	
 # Clean
 clean:
-	rm -f obj/*.o bin/*
+	@echo "Cleaning up..."
+	@rm -f obj/*.o bin/*
