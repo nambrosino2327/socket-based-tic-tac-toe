@@ -23,7 +23,8 @@ enum class MsgType : uint8_t {
 	DRAW,
 	ERROR,
 	MOVE_REQUEST = 100,
-	QUIT_REQUEST
+	QUIT_REQUEST,
+	MOVE_ACK	  // New: acknowledge move received
 };
 
 enum class ProtoErr : int {
@@ -33,6 +34,16 @@ enum class ProtoErr : int {
 	NULL_PAYLOAD,
 	BUFFER_TOO_SMALL,
 	SIZE_MISMATCH
+};
+
+enum class GameErr : uint8_t {
+	MOVE_OUT_OF_TURN = 1,
+	MOVE_INVALID = 2,
+	MOVE_CELL_OCCUPIED = 3,
+	MALFORMED_MOVE_REQUEST = 4,
+	GAME_ALREADY_FINISHED = 5,
+	SERVER_FULL_ERROR = 6,
+	TIMEOUT = 7
 };
 
 struct MsgHeader {
@@ -51,6 +62,9 @@ struct PL_MovReq {
 };
 struct PL_MovRes {
 	uint8_t status;
+};
+struct PL_Error {
+	uint8_t error_code;
 };
 
 /**

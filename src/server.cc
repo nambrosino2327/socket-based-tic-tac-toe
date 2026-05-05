@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include <atomic>
+#include <cerrno>
 #include <csignal>
 #include <cstring>
 #include <iostream>
@@ -11,6 +12,7 @@
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <thread>
 #include <unistd.h>
@@ -34,8 +36,13 @@ static bool recv_all(int sockfd, void* buf, size_t len) {
 	size_t total = 0;
 	ssize_t n;
 	while (total < len) {
-		if ((n = recv(sockfd, p + total, len - total, 0)) <= 0)
-			return false; // disconnection or error
+		if ((n = recv(sockfd, p + total, len - total, 0)) <= 0) {
+			// Check for timeout (EAGAIN/EWOULDBLOCK)
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				std::cerr << "Socket timeout: No data received" << std::endl;
+			}
+			return false; // disconnection, timeout, or error
+		}
 		total += static_cast<size_t>(n);
 	}
 	return true;
@@ -148,9 +155,9 @@ void handle_client(int sockfd, int player_id) {
 		// Ensure move request is not malformed
 		if (type == MsgType::MOVE_REQUEST) {
 			if (pl.size() < sizeof(PL_MovReq)) {
-				std::string m = "ERR: MALFORMED MOVE REQUEST";
+				PL_Error err{(uint8_t)GameErr::MALFORMED_MOVE_REQUEST};
 				std::vector<uint8_t> out;
-				serialize(MsgType::ERROR, m.data(), m.size(), out);
+				serialize(MsgType::ERROR, &err, sizeof(err), out);
 				send_all(sockfd, out);
 				continue;
 			}
@@ -164,9 +171,9 @@ void handle_client(int sockfd, int player_id) {
 			// Ensure player doesn't send request out of turn
 			int active = (g.activePlayer() == Player::P1 ? 1 : 2);
 			if (player_id != active) {
-				std::string m = "Not your turn";
+				PL_Error err{(uint8_t)GameErr::MOVE_OUT_OF_TURN};
 				std::vector<uint8_t> out;
-				serialize(MsgType::ERROR, m.data(), m.size(), out);
+				serialize(MsgType::ERROR, &err, sizeof(err), out);
 				send_all(sockfd, out);
 				continue;
 			}
@@ -181,8 +188,10 @@ void handle_client(int sockfd, int player_id) {
 				serialize(MsgType::MOVE_RESULT, &mv_res, sizeof(mv_res), out);
 				send_all(player_socket[player_id - 1], out);
 			}
-			if (!valid)
+			if (!valid) {
+				cout << "Player " << player_id << " attempted invalid move at position " << pos << endl;
 				continue;
+			}
 
 			// Display board
 			send_board(player_socket[0]);
@@ -242,7 +251,7 @@ void handle_client(int sockfd, int player_id) {
 }
 
 // Main method
-int main() {
+int main(int argc, char* argv[]) {
 	// Install signal handlers
 	signal(SIGINT, handle_quit);
 	signal(SIGTERM, handle_quit);
@@ -251,8 +260,21 @@ int main() {
 	using std::cout, std::endl, std::cerr;
 	using std::string;
 
-	int newsockfd, portno = 8080;
+	// Parse command-line arguments
+	int portno = 8080;
 	string address = "127.0.0.1";
+	
+	if (argc > 1) {
+		portno = std::stoi(argv[1]);
+	}
+	if (argc > 2) {
+		address = argv[2];
+	}
+	
+	// Print server info
+	cout << "Starting Tic-Tac-Toe server on " << address << ":" << portno << endl;
+
+	int newsockfd;
 	socklen_t cliLen;
 	struct sockaddr_in serv_addr, cli_addr;
 
@@ -261,8 +283,15 @@ int main() {
 	 */
 	if ((serv_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		fatal_error(1, "Error opening socket");
+	
 	int opt = 1;
 	setsockopt(serv_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	
+	// Set socket timeout (30 seconds)
+	struct timeval tv;
+	tv.tv_sec = 30;
+	tv.tv_usec = 0;
+	setsockopt(serv_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 
 	/**
 	 * Set address and port number to given values (fixed to localhost:8080 in

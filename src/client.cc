@@ -5,11 +5,13 @@
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cctype>
+#include <cerrno>
 #include <cstring>
 #include <iostream>
 #include <signal.h>
 #include <string>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <vector>
 
@@ -24,8 +26,13 @@ static bool recv_all(int sockfd, void* buf, size_t len) {
 	size_t total = 0;
 	ssize_t n;
 	while (total < len) {
-		if ((n = recv(sockfd, p + total, len - total, 0)) <= 0)
-			return false; // disconnection or error
+		if ((n = recv(sockfd, p + total, len - total, 0)) <= 0) {
+			// Check for timeout (EAGAIN/EWOULDBLOCK)
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				std::cerr << "Socket timeout: No data received from server" << std::endl;
+			}
+			return false; // disconnection, timeout, or error
+		}
 		total += static_cast<size_t>(n);
 	}
 	return true;
@@ -108,8 +115,19 @@ static void handle_quit(int) {
 }
 
 // Main method
-int main() {
+int main(int argc, char* argv[]) {
 	using std::cout, std::endl;
+
+	// Parse command-line arguments
+	int portno = 8080;
+	std::string address = "127.0.0.1";
+	
+	if (argc > 1) {
+		address = argv[1];
+	}
+	if (argc > 2) {
+		portno = std::stoi(argv[2]);
+	}
 
 	/**
 	 * Open socket
@@ -117,18 +135,23 @@ int main() {
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		fatal_error(1, "Error opening socket");
 
+	// Set socket timeout (30 seconds)
+	struct timeval tv;
+	tv.tv_sec = 30;
+	tv.tv_usec = 0;
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+
 	/**
-	 * Connect to server on localhost:8080
+	 * Connect to server
 	 */
-	int portno = 8080;
 	sockaddr_in serv_addr;
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(portno);
-	inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
+	inet_pton(AF_INET, address.c_str(), &serv_addr.sin_addr);
 	if (connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
 		fatal_error(1, "Error connecting to server");
 
-	cout << "Successfully connected to server" << endl;
+	cout << "Successfully connected to server at " << address << ":" << portno << endl;
 	signal(SIGINT, handle_quit);
 	signal(SIGTERM, handle_quit); // Another way of quitting (rarer)
 
@@ -253,8 +276,39 @@ int main() {
 		} break;
 
 		case MsgType::ERROR: {
-			std::string m(pl.begin(), pl.end());
-			cout << "Server err: " << m << endl;
+			if (pl.size() >= sizeof(PL_Error)) {
+				PL_Error err;
+				memcpy(&err, pl.data(), sizeof(err));
+				const char* err_msg = "Unknown error";
+				
+				switch ((GameErr)err.error_code) {
+					case GameErr::MOVE_OUT_OF_TURN:
+						err_msg = "It's not your turn!";
+						break;
+					case GameErr::MOVE_INVALID:
+						err_msg = "Invalid move!";
+						break;
+					case GameErr::MOVE_CELL_OCCUPIED:
+						err_msg = "That cell is already occupied!";
+						break;
+					case GameErr::MALFORMED_MOVE_REQUEST:
+						err_msg = "Malformed move request sent";
+						break;
+					case GameErr::GAME_ALREADY_FINISHED:
+						err_msg = "Game is already finished";
+						break;
+					case GameErr::SERVER_FULL_ERROR:
+						err_msg = "Server is full!";
+						break;
+					case GameErr::TIMEOUT:
+						err_msg = "Connection timeout";
+						break;
+				}
+				cout << "\x1b[38;5;196m" << "Error: " << err_msg << C_RST << endl;
+			} else {
+				std::string m(pl.begin(), pl.end());
+				cout << "Server error: " << m << endl;
+			}
 		} break;
 
 		default: {
