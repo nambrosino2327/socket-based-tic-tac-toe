@@ -4,7 +4,6 @@ DEPFLAGS := -MMD -MP
 OBJ_DIR  := obj
 BIN_DIR  := bin
 
-# 1. Define your shared logic (no main() functions here)
 CORE_SRCS := src/protocol.cc src/game.cc src/utils.cc
 CORE_OBJS := $(CORE_SRCS:src/%.cc=$(OBJ_DIR)/%.o)
 

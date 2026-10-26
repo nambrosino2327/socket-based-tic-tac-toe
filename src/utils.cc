@@ -7,22 +7,22 @@ void fatal_error(int errCode, const char* m) {
 	exit(errCode);
 }
 
-static void displayCell(const Cell c) {
-	switch (c) {
-	case Cell::X:
-		std::cout << C_P1 << 'X' << C_RST;
-		break;
-	case Cell::O:
-		std::cout << C_P2 << 'O' << C_RST;
-		break;
-	default:
-		std::cout << '.';
-		break;
-	}
-}
-
 void displayBoard(Game& g) {
 	using std::cout;
+
+	auto displayCell = [](const Cell c) {
+		switch (c) {
+		case Cell::X:
+			std::cout << C_P1 << 'X' << C_RST;
+			break;
+		case Cell::O:
+			std::cout << C_P2 << 'O' << C_RST;
+			break;
+		default:
+			std::cout << '.';
+			break;
+		}
+	};
 
 	auto& b = g.board();
 
@@ -42,6 +42,20 @@ void displayBoard(Game& g) {
 
 void displayBoard(const Game& g) {
 	using std::cout;
+
+	auto displayCell = [](const Cell c) {
+		switch (c) {
+		case Cell::X:
+			std::cout << C_P1 << 'X' << C_RST;
+			break;
+		case Cell::O:
+			std::cout << C_P2 << 'O' << C_RST;
+			break;
+		default:
+			std::cout << '.';
+			break;
+		}
+	};
 
 	auto& b = g.board();
 
