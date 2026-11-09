@@ -2,12 +2,13 @@
 #define GAME_HH
 
 #include <array>
+#include <cstdint>
 
 // Enum for cells on the 3x3 board
-enum class Cell { EMPTY, X, O };
+enum class Cell : uint8_t { EMPTY, X, O };
 
 // Enum for player
-enum class Player { P1, P2 };
+enum class Player : uint8_t { P1, P2 };
 
 // Game class to encapsulate game logic to be ran on the server
 class Game {

@@ -27,7 +27,7 @@ enum class MsgType : uint8_t {
 	MOVE_ACK	  // New: acknowledge move received
 };
 
-enum class ProtoErr : int {
+enum class ProtoErr : uint8_t{
 	OK = 0,
 	INVALID_TYPE,
 	INVALID_SIZE,
