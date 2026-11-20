@@ -11,16 +11,15 @@ CORE_OBJS := $(CORE_SRCS:src/%.cc=$(OBJ_DIR)/%.o)
 
 all: $(BIN_DIR)/server $(BIN_DIR)/client
 
-# 2. Linking rules: each binary gets its specific .o + all core .os
-$(BIN_DIR)/server: $(OBJ_DIR)/server.o $(CORE_OBJS) | $(BIN_DIR)
+# Linking rules
+$(BIN_DIR)/server: $(OBJ_DIR)/server.o $(CORE_OBJS)
+$(BIN_DIR)/client: $(OBJ_DIR)/client.o $(CORE_OBJS)
+
+$(BIN_DIR)/server $(BIN_DIR)/client: | $(BIN_DIR)
 	@echo "[LD]  $^ --> $@"
 	@$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(BIN_DIR)/client: $(OBJ_DIR)/client.o $(CORE_OBJS) | $(BIN_DIR)
-	@echo "[LD]  $^ --> $@"
-	@$(CXX) $(CXXFLAGS) $^ -o $@
-
-# 3. Generic compilation rule
+# Compilation rules
 $(OBJ_DIR)/%.o: src/%.cc | $(OBJ_DIR)
 	@echo "[CXX] $< --> $@"
 	@$(CXX) $(CXXFLAGS) $(DEPFLAGS) -c $< -o $@
@@ -31,4 +30,5 @@ $(OBJ_DIR) $(BIN_DIR):
 -include $(OBJ_DIR)/*.d
 
 clean:
-	@$(RM) -rv $(OBJ_DIR) $(BIN_DIR)
+	@echo "Cleaning up..."
+	@$(RM) -rf $(OBJ_DIR) $(BIN_DIR)
